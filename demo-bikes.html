@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
+    </style>
+    <script src="js/streamdataio.min.js"></script>
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=[YOUR_GOOGLE_API_KEY]">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fast-json-patch/0.5.2/json-patch-duplex.min.js"></script>
+    <script type="text/javascript">
+
+      // ADD YOUR STREAMDATA.IO API KEY PAIR HERE
+      streamdataio.Pk = "[YOUR_STREAMDATA.IO_PUBLIC_KEY]";
+      streamdataio.pk = "[YOUR_STREAMDATA.IO_PRIVATE_KEY]";
+      
+      //var city = { name: "Rouen", position: new google.maps.LatLng(49.4431,1.0993) };
+      //var city = { name: "Paris", position: new google.maps.LatLng(48.856614,2.352222) };
+      var city = { name: "Lyon", position: new google.maps.LatLng(45.750000,4.850000) };
+
+
+      var myEventSource = streamdataio.createEventSource("https://api.jcdecaux.com/vls/v1/stations?contract=" 
+        + city.name + "&apiKey=[YOUR_JCDECAUX_API_KEY]");
+      
+      var map;
+      var stations = [];
+      var markers = [];
+      
+      function initialize() {
+
+        var map_canvas = document.getElementById('map_canvas');
+        var mapOptions = {
+          zoom: 14,
+          center: city.position
+        }
+        map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+        var bikeLayer = new google.maps.BicyclingLayer();
+        bikeLayer.setMap(map);
+      }
+      
+      //When the window is loaded, run the initialize function to setup the map
+      google.maps.event.addDomListener(window, 'load', initialize);   
+
+      function printStation(station) {
+        console.log('latitude: ' + station.position.lat);
+        console.log('longitude: ' + station.position.lng);
+        console.log('availableBikes: ' + station.available_bikes);
+        console.log('availableDocks: ' + station.available_bike_stands);
+        console.log('distance: ' + station.distance);
+        console.log('name: ' + station.name);
+        console.log('address: ' + station.address);
+        console.log('status: ' + station.status);
+        console.log('---------------------------');
+      }
+
+      function addStationInfoWindow(index, marker) {
+          var contentString;
+          var infoWindow;
+          var station = stations[index];
+
+          contentString = '<div id="content">'+
+            '<div id="siteNotice">'+
+            '</div>'+
+            '<h1 id="firstHeading" class="firstHeading">' + '[' + index + '] ' + station.name +'</h1>'+
+            '<div id="bodyContent">'+
+            '<p> Status: <b>' + station.status + '</b></p>' + 
+            '<p> Available Bikes: <b>' + station.available_bikes + '</b></p>' + 
+            '<p> Available Docks: <b>' + station.available_bike_stands + '</b></p>' +
+            '<p><i>Brought to you by <a href="streamdata.io">streamdata.io</a></i>'+
+            '</div>'+
+            '</div>';
+
+          infoWindow = new google.maps.InfoWindow({
+            content: contentString
+          });
+
+          //Creates the event listener for clicking the marker
+          //and places the marker on the map
+          google.maps.event.addListener(marker, 'click', function() {
+            infoWindow .open(map, marker);
+          });
+      }
+
+
+      function addMarkersToMap(stations) {
+        
+        for (var i = 0; i < stations.length; i++) { 
+  
+          var station = stations[i];
+          var stationLatlng = new google.maps.LatLng(station.position.lat,station.position.lng);
+ 
+          var marker = new google.maps.Marker({
+            position: stationLatlng,
+            map: map,
+            icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+            title: 'Bike Docking Station'
+          });
+
+          addStationInfoWindow(i, marker);
+          markers.push(marker);
+        }
+      }
+
+      function hasAvailableBikeOrDocks(patch) {
+        return patch.path.indexOf('available_bikes') > 0 || patch.path.indexOf('available_bike_stands') > 0;
+      }
+
+      myEventSource.onData(function(data){
+          // initialize your data with the initial snapshot
+          stations = data;
+          addMarkersToMap(stations);
+          
+        }).onPatch(function(patches){
+          // update the data with the provided patch
+          console.log("Refreshing stations");
+          jsonpatch.apply(stations, patches);
+
+          patches.forEach(function(patch) {
+             
+             // Check if it is a revelant patch before updating UI
+             if (hasAvailableBikeOrDocks(patch)) {
+                 var index = patch.path.indexOf('/', 1);
+                 var markerIdx = patch.path.substring(1, index);
+                 var marker = markers[markerIdx];
+
+                 marker.setAnimation(google.maps.Animation.BOUNCE);
+                 marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
+
+                 window.setTimeout(function() {
+                     marker.setAnimation(null);
+                     marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
+                 }, 6000);
+             }
+
+          });
+
+        }).onError(function(data){
+            // do whatever you need in case of error
+        }).onOpen(function(data){
+            // you can also add custom behavior when the stream is opened
+        });
+      
+      myEventSource.open();
+
+    </script>
+  </head>
+  <body>
+<div id="map-canvas"></div>
+  </body>
+</html>
