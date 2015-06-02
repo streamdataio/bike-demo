@@ -9,17 +9,13 @@
        #citypanel { position: absolute; top: 5px; left: 50%; margin-left: -180px; 
                     z-index: 5; background-color: #fff; padding: 5px; border: 1px solid #999; }
     </style>
-    <script src="js/streamdataio.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
     <script src="http://google-maps-utility-library-v3.googlecode.com/svn/tags/markerwithlabel/1.0.1/src/markerwithlabel.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fast-json-patch/0.5.2/json-patch-duplex.min.js"></script>
     <script type="text/javascript">
 
-      // ADD YOUR STREAMDATA.IO API KEY PAIR HERE
+      // ADD YOUR JCDECAUX API KEY PAIR HERE
       var jcDecauxAPIKey = "[YOUR_JCDECAUX_API_KEY]";
-      streamdataio.Pk = "[YOUR_STREAMDATA.IO_PUBLIC_KEY]";
-      streamdataio.pk = "[YOUR_STREAMDATA.IO_PRIVATE_KEY]";
-
 
       var map;
       var stations = [];
@@ -53,30 +49,21 @@
         var bikeLayer = new google.maps.BicyclingLayer();
         bikeLayer.setMap(map);
 
-        myEventSource = createAndregisterEventSource(selectedCity, jcDecauxAPIKey);
-        myEventSource.open();
+        getDataFromAPI(selectedCity, jcDecauxAPIKey);
       }
 
-      function createAndregisterEventSource(selectedCity, jcDecauxAPIKey) {
-        var eventSource = streamdataio.createEventSource("https://api.jcdecaux.com/vls/v1/stations?contract=" 
+      function getDataFromAPI(selectedCity, jcDecauxAPIKey) {
+        var xmlhttp=new XMLHttpRequest();
+        xmlhttp.open("GET","https://api.jcdecaux.com/vls/v1/stations?contract="
                           + selectedCity + "&apiKey="+ jcDecauxAPIKey);
+        xmlhttp.send();
 
-        eventSource.onData(function(data){
+        xmlhttp.onreadystatechange=function() {
             // initialize your data with the initial snapshot
-            stations = data;
+            stations = JSON.parse(xmlhttp.responseText);
             addMarkersToMap(stations);
             
-          }).onPatch(function(patches){
-            // update the data with the provided patch
-            jsonpatch.apply(stations, patches);
-            addMarkersToMap(stations);
-            console.log("UPDATED DATA WITH " + JSON.stringify(patches));
-
-          }).onError(function(error){
-              console.error(error);
-          });
-
-          return eventSource;
+          };
       }
 
       function changeCity() {
@@ -86,12 +73,14 @@
 
         selectedCity = document.getElementById('city').value;
 
-        //Create a new EventSource to fetch bikes stations for newly selected city
-        myEventSource.close();
-        myEventSource = createAndregisterEventSource(selectedCity, jcDecauxAPIKey);
-        myEventSource.open();
+        getDataFromAPI(selectedCity, jcDecauxAPIKey);
+
         //Pan map to new selected city
         map.panTo(citiesPositions[selectedCity]);
+      }
+
+      function refresh() {
+        getDataFromAPI(selectedCity, jcDecauxAPIKey);
       }
 
       function addStationInfoWindow(index, marker) {
@@ -192,6 +181,7 @@
         <option value="Dublin">Dublin</option>
         <option value="Valence">Valence</option>
       </select>
+      <button id="refreshBtn" onclick="refresh();">Refresh</button>
     </div>
   </body>
 </html>
