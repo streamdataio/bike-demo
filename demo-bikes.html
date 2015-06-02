@@ -19,7 +19,8 @@
       var jcDecauxAPIKey = "[YOUR_JCDECAUX_API_KEY]";
       streamdataio.Pk = "[YOUR_STREAMDATA.IO_PUBLIC_KEY]";
       streamdataio.pk = "[YOUR_STREAMDATA.IO_PRIVATE_KEY]";
-      
+
+
       var map;
       var stations = [];
       var markers = [];
@@ -68,40 +69,8 @@
           }).onPatch(function(patches){
             // update the data with the provided patch
             jsonpatch.apply(stations, patches);
-            patches.forEach(function(patch) {
-               
-               // Check if it is a relevant patch before updating UI
-               if (hasAvailableBikeOrDocks(patch)) {
-                  
-                  var index = patch.path.indexOf('/', 1);
-                  var markerIdx = patch.path.substring(1, index);
-                  var marker = markers[markerIdx];
-                  var infoWindow = infoWindows[markerIdx];
-                  var station = stations[markerIdx];
-
-                  var icon = (station.available_bikes === 0)?"img/cycling-red.png":"img/cycling-green.png";
-                  var labelClass = (station.available_bikes === 0)?"mapIconLabelRed":"mapIconLabelGreen"
-
-                  //Update InfoWindow content
-                  infoWindow.setContent(createWindowInfoContent(station));
-
-                  //Update Marker
-                  marker.setIcon("img/cycling-blue.png");
-                  marker.setOptions({ labelContent: station.available_bikes });
-                  marker.setAnimation(google.maps.Animation.BOUNCE);
-
-                  window.setTimeout(function() {
-                     marker.setAnimation(null);
-
-                    var icon = (station.available_bikes === 0)?"img/cycling-red.png":"img/cycling-green.png";
-                    var labelClass = (station.available_bikes === 0)?"mapIconLabelRed":"mapIconLabelGreen";
-                    marker.setOptions({ labelClass: labelClass });
-                    marker.setIcon(icon);
-
-                  }, 3000);
-               }
-
-            });
+            addMarkersToMap(stations);
+            console.log("UPDATED DATA WITH " + JSON.stringify(patches));
 
           }).onError(function(error){
               console.error(error);
