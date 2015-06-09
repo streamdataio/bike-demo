@@ -15,7 +15,7 @@
     <script type="text/javascript">
 
       // ADD YOUR JCDECAUX API KEY PAIR HERE
-      var jcDecauxAPIKey = "[YOUR_JCDECAUX_API_KEY]";
+      var jcDecauxAPIKey = "[YOUR JCDECAUX API KEY]";
 
       var map;
       var stations = [];
@@ -24,6 +24,7 @@
       var lastOpenedInfoWindow;
       var selectedCity = 'Lyon';
       var myEventSource;
+      var intervalId = null;
 
       var citiesPositions = [];
       citiesPositions['Lyon']  = new google.maps.LatLng(45.750000,4.850000);
@@ -49,7 +50,21 @@
         var bikeLayer = new google.maps.BicyclingLayer();
         bikeLayer.setMap(map);
 
-        getDataFromAPI(selectedCity, jcDecauxAPIKey);
+        getDataFromAPIWithInterval(selectedCity, jcDecauxAPIKey);
+
+      }
+
+      function getDataFromAPIWithInterval(selectedCity, jcDecauxAPIKey) {
+
+        if (intervalId !== null) {
+          window.clearInterval(intervalId);
+
+        } else {
+          getDataFromAPI(selectedCity, jcDecauxAPIKey);
+
+        }
+
+        intervalId = window.setInterval(getDataFromAPI, 30000, selectedCity, jcDecauxAPIKey);
       }
 
       function getDataFromAPI(selectedCity, jcDecauxAPIKey) {
@@ -68,9 +83,9 @@
                 console.error('An error occurred while getting the data from the server');
               }
             }
-
           };
       }
+
 
       function changeCity() {
         stations = [];
@@ -79,7 +94,7 @@
 
         selectedCity = document.getElementById('city').value;
 
-        getDataFromAPI(selectedCity, jcDecauxAPIKey);
+        getDataFromAPIWithInterval(selectedCity, jcDecauxAPIKey);
 
         //Pan map to new selected city
         map.panTo(citiesPositions[selectedCity]);
@@ -187,7 +202,6 @@
         <option value="Dublin">Dublin</option>
         <option value="Valence">Valence</option>
       </select>
-      <button id="refreshBtn" onclick="refresh();">Refresh</button>
     </div>
   </body>
 </html>
