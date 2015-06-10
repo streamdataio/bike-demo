@@ -65,12 +65,15 @@
             // initialize your data with the initial snapshot
             stations = data;
             addMarkersToMap(stations);
-            
+
           }).onPatch(function(patches){
             // update the data with the provided patch
+            console.time("perf");
+            reset();
             jsonpatch.apply(stations, patches);
             addMarkersToMap(stations);
             console.log("UPDATED DATA WITH " + JSON.stringify(patches));
+            console.timeEnd("perf");
 
           }).onError(function(error){
               console.error(error);
@@ -80,9 +83,9 @@
       }
 
       function changeCity() {
+        reset();
         stations = [];
-        markers = [];
-        infoWindows = [];
+
 
         selectedCity = document.getElementById('city').value;
 
@@ -140,6 +143,14 @@
           addStationInfoWindow(i, marker);
           markers.push(marker);
         }
+      }
+
+      function reset() {
+        for (var i = 0; i < markers.length; i++) {
+          markers[i].setMap(null);
+        }
+        markers = [];
+        infoWindows = [];
       }
 
       function hasAvailableBikeOrDocks(patch) {
