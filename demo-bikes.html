@@ -67,17 +67,17 @@
             
           }).onPatch(function(patches){
             // update the data with the provided patch
+            console.time("perf");
+
             jsonpatch.apply(stations, patches);
             patches.forEach(function(patch) {
                
                // Check if it is a relevant patch before updating UI
                if (hasAvailableBikeOrDocks(patch)) {
-                  
-                  var index = patch.path.indexOf('/', 1);
-                  var markerIdx = patch.path.substring(1, index);
-                  var marker = markers[markerIdx];
-                  var infoWindow = infoWindows[markerIdx];
-                  var station = stations[markerIdx];
+                  var stationIdx = getStationIndex(patch);
+                  var marker = markers[stationIdx];
+                  var infoWindow = infoWindows[stationIdx];
+                  var station = stations[stationIdx];
 
                   var icon = (station.available_bikes === 0)?"img/cycling-red.png":"img/cycling-green.png";
                   var labelClass = (station.available_bikes === 0)?"mapIconLabelRed":"mapIconLabelGreen"
@@ -85,23 +85,19 @@
                   //Update InfoWindow content
                   infoWindow.setContent(createWindowInfoContent(station));
 
-                  //Update Marker
+                  //Update Marker for animation
                   marker.setIcon("img/cycling-blue.png");
                   marker.setOptions({ labelContent: station.available_bikes });
                   marker.setAnimation(google.maps.Animation.BOUNCE);
 
                   window.setTimeout(function() {
-                     marker.setAnimation(null);
-
-                    var icon = (station.available_bikes === 0)?"img/cycling-red.png":"img/cycling-green.png";
-                    var labelClass = (station.available_bikes === 0)?"mapIconLabelRed":"mapIconLabelGreen";
+                    marker.setAnimation(null);
                     marker.setOptions({ labelClass: labelClass });
                     marker.setIcon(icon);
-
                   }, 3000);
                }
-
             });
+            console.timeEnd("perf");
 
           }).onError(function(error){
               console.error(error);
@@ -175,6 +171,11 @@
 
       function hasAvailableBikeOrDocks(patch) {
         return patch.path.indexOf('available_bikes') > 0;
+      }
+
+      function getStationIndex(patch) {
+        var sepIndex = patch.path.indexOf('/', 1);
+        return patch.path.substring(1, sepIndex);
       }
 
       function createWindowInfoContent(station){
