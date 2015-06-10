@@ -73,9 +73,7 @@
       }
 
       function changeCity() {
-        stations = [];
-        markers = [];
-        infoWindows = [];
+        reset();
 
         selectedCity = document.getElementById('city').value;
 
@@ -86,6 +84,7 @@
       }
 
       function refresh() {
+        reset();
         getDataFromAPI(selectedCity, jcDecauxAPIKey);
       }
 
@@ -135,6 +134,15 @@
           addStationInfoWindow(i, marker);
           markers.push(marker);
         }
+      }
+
+      function reset() {
+        for (var i = 0; i < markers.length; i++) {
+          markers[i].setMap(null);
+        }
+        stations = [];
+        markers = [];
+        infoWindows = [];
       }
 
       function hasAvailableBikeOrDocks(patch) {
