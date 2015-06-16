@@ -7,7 +7,7 @@ Follow these steps to make it work:
 
 2- Create a free account on streamdata.io to get your Public and Private Keys at https://portal.streamdata.io/#/register.
 
-3- Edit demo-bikes.html and replace [YOUR_JCDECAUX_API_KEY], [YOUR_STREAMDATA.IO_PUBLIC_KEY] and [YOUR_STREAMDATA.IO_PRIVATE_KEY] with the appropriate keys.
+3- Edit demo-bikes.html and replace [YOUR_JCDECAUX_API_KEY] and [YOUR_STREAMDATAIO_APP_TOKEN] with the appropriate keys.
 
 4- Save and launch demo-bikes.html in your favorite browser (works with Chrome, Firefox and Safari).
 
