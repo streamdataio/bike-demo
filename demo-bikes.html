@@ -17,9 +17,7 @@
 
       // ADD YOUR STREAMDATA.IO API KEY PAIR HERE
       var jcDecauxAPIKey = "[YOUR_JCDECAUX_API_KEY]";
-      streamdataio.Pk = "[YOUR_STREAMDATA.IO_PUBLIC_KEY]";
-      streamdataio.pk = "[YOUR_STREAMDATA.IO_PRIVATE_KEY]";
-
+      var streamdataioAppToken = "[YOUR_STREAMDATAIO_APP_TOKEN]";
 
       var map;
       var stations = [];
@@ -58,8 +56,8 @@
       }
 
       function createAndregisterEventSource(selectedCity, jcDecauxAPIKey) {
-        var eventSource = streamdataio.createEventSource("https://api.jcdecaux.com/vls/v1/stations?contract=" 
-                          + selectedCity + "&apiKey="+ jcDecauxAPIKey);
+	var eventSource = streamdataio.createEventSource("https://api.jcdecaux.com/vls/v1/stations?contract=" 
+                          + selectedCity + "&apiKey="+ jcDecauxAPIKey, streamdataioAppToken);
 
         eventSource.onData(function(data){
             // initialize your data with the initial snapshot
