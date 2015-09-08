@@ -70,9 +70,8 @@
             reset();
             jsonpatch.apply(stations, patches);
             addMarkersToMap(stations);
-            console.log("UPDATED DATA WITH " + JSON.stringify(patches));
             console.timeEnd("perf");
-
+            console.log("UPDATED DATA WITH " + JSON.stringify(patches));
           }).onError(function(error){
               console.error(error);
           });
