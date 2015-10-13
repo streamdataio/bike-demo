@@ -5,7 +5,7 @@ var markers = [];
 var infoWindows = [];
 var lastOpenedInfoWindow;
 var selectedCity = 'Lyon';
-var selectedMarkerLabel;
+var selectedMarkerLabel = "availableBikes";
 var myEventSource;
 var bounds = new google.maps.LatLngBounds();
 
@@ -153,7 +153,7 @@ function addMarkersToMap(stations) {
 }
 
 function hasAvailableBikeOrDocks(patch) {
-  return patch.path.indexOf('available_bikes') > 0;
+  return (patch.path.indexOf('available_bikes') > 0 || patch.path.indexOf('available_bike_stands') > 0);
 }
 
 function getStationIndex(patch) {
