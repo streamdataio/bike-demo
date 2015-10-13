@@ -8,16 +8,18 @@ var selectedCity = 'Lyon';
 var selectedMarkerLabel = "availableBikes";
 var myEventSource;
 var bounds = new google.maps.LatLngBounds();
+var mcOptions = {gridSize: 50, maxZoom: 15};
 
 //When the window is loaded, run the initialize function to setup the map
 google.maps.event.addDomListener(window, 'load', initialize);   
 
 function initialize() {
-  var map_canvas = document.getElementById('map_canvas');
+  var map_canvas = document.getElementById('map_canvas'); 
   var mapOptions = {
     zoom: 12
   }
   map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
   map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(document.getElementById('legend'));
   
   //Set bike layer
@@ -149,6 +151,7 @@ function addMarkersToMap(stations) {
     bounds.extend(stationLatlng);
     markers.push(marker);
   }
+    var markerCluster = new MarkerClusterer(map, markers, mcOptions);
     map.fitBounds(bounds);
 }
 
