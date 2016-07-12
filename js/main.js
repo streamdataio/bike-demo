@@ -8,7 +8,7 @@ var selectedCity = 'Lyon';
 var selectedMarkerLabel = "availableBikes";
 var myEventSource;
 var bounds = new google.maps.LatLngBounds();
-var mcOptions = {gridSize: 50, maxZoom: 15};
+var mcOptions = {gridSize: 50, maxZoom: 15, imagePath: 'img/m'};
 
 //When the window is loaded, run the initialize function to setup the map
 google.maps.event.addDomListener(window, 'load', initialize);   
@@ -135,17 +135,21 @@ function addMarkersToMap(stations) {
       labelContent = station.available_bike_stands;
     }
   
-    var marker = new MarkerWithLabel({
+    var mapLabel = new MapLabel({
+      text: labelContent,
       position: stationLatlng,
       map: map,
-      icon: icon,
-      draggable: false,
-      raiseOnDrag: false,
-      labelContent: labelContent,
-      labelAnchor: new google.maps.Point(7, 33),
-      labelClass: labelClass,
-      labelInBackground: false
+      strokeWeight:5,
+      fontSize: 12,
+      align: 'center'
     });
+    mapLabel.set('position', stationLatlng);    
+
+    var marker = new google.maps.Marker();
+    marker.bindTo('map', mapLabel);
+    marker.bindTo('position', mapLabel);
+    marker.setIcon(icon);
+    marker.setDraggable(false);
 
     addStationInfoWindow(i, marker);
     bounds.extend(stationLatlng);
